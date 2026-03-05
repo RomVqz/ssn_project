@@ -17,9 +17,9 @@ source "$HOME/.cargo/env"
 
 curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
 
-source "$HOME/.local/share/solana/install/active_release/bin/solana-install-env"
-
 export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+
+solana --version
 
 echo "--- Instalación de Rust, Solana y Anchor completada ---"
 
@@ -45,7 +45,3 @@ solana-keygen new --no-bip39-passphrase --outfile ~/.config/solana/id.json
 anchor build
 
 echo "Entorno listo para usar!!! :D"
-
-# npm install -g yarn
-# npm install -g typescript
-# npm install @solana/web3.js @coral-xyz/anchor
