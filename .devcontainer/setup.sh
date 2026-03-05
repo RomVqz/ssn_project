@@ -31,6 +31,8 @@ export NVM_DIR="$HOME/.nvm"
 
 nvm install node 
 
+nvm use node
+
 npm install -g typescript   
 
 npm install @solana/web3.js @coral-xyz/anchor
