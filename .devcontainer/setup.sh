@@ -16,7 +16,8 @@ curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
 
 curl --proto '=https' --tlsv1.2 -sSfL https://solana-install.solana.workers.dev | bash
 
-echo 'export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"' >> ~/.bashrc
+export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+
 source ~/.bashrc
 
 echo "--- Instalación de Rust, Solana y Anchor completada ---"
@@ -26,8 +27,6 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 nvm install node
 nvm use node
-
-# cd 
 
 # npm install -g yarn
 # npm install -g typescript
@@ -47,3 +46,5 @@ solana-keygen new --no-bip39-passphrase --outfile ~/.config/solana/id.json
 anchor build
 
 echo "Entorno listo para usar!!! :D"
+
+
