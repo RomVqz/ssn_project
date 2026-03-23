@@ -1,0 +1,48 @@
+version: "3.9"
+
+services:
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: ssn_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ssn_user
+      POSTGRES_PASSWORD: ssn_password
+      POSTGRES_DB: ssn_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ssn_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ssn_user -d ssn_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Backend API ──────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ssn_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://ssn_user:ssn_password@postgres:5432/ssn_db
+      SOLANA_RPC_URL: ${SOLANA_RPC_URL:-https://api.devnet.solana.com}
+      SSN_PROGRAM_ID: ${SSN_PROGRAM_ID:-SSNprogXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}
+      PINATA_JWT: ${PINATA_JWT:-}
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+
+volumes:
+  ssn_pgdata:

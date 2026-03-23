@@ -1,0 +1,107 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SSN – Prisma Schema
+// PostgreSQL database models (cache / index of Solana state)
+// ─────────────────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Paper ────────────────────────────────────────────────────────────────────
+
+model Paper {
+  id             Int       @id @default(autoincrement())
+  onChainId      BigInt    @unique @map("on_chain_id")  // matches Paper.id on Solana
+  pda            String    @unique                      // base58 PDA address
+  authorWallet   String    @map("author_wallet")
+  title          String
+  authors        String[]
+  abstractCid    String    @map("abstract_cid")
+  pdfCid         String    @map("pdf_cid")
+  field          String
+  publishedAt    DateTime  @map("published_at")
+  reviewCount    Int       @default(0) @map("review_count")
+  avgRating      Float     @default(0) @map("avg_rating")
+  fundingGoal    BigInt    @default(0) @map("funding_goal")    // lamports
+  fundingRaised  BigInt    @default(0) @map("funding_raised")  // lamports
+  txSignature    String    @map("tx_signature")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  reviews        Review[]
+  contributions  Contribution[]
+  author         UserProfile?   @relation(fields: [authorWallet], references: [wallet])
+
+  @@map("papers")
+}
+
+// ── Review ───────────────────────────────────────────────────────────────────
+
+model Review {
+  id             Int       @id @default(autoincrement())
+  pda            String    @unique
+  paperId        BigInt    @map("paper_id")
+  reviewerWallet String    @map("reviewer_wallet")
+  rating         Int                              // 1-5
+  commentCid     String    @map("comment_cid")   // IPFS CID of review text
+  submittedAt    DateTime  @map("submitted_at")
+  txSignature    String    @map("tx_signature")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  paper          Paper      @relation(fields: [paperId], references: [onChainId])
+  reviewer       UserProfile? @relation(fields: [reviewerWallet], references: [wallet])
+
+  @@map("reviews")
+}
+
+// ── Contribution ─────────────────────────────────────────────────────────────
+
+model Contribution {
+  id                Int      @id @default(autoincrement())
+  paperId           BigInt   @map("paper_id")
+  contributorWallet String   @map("contributor_wallet")
+  amount            BigInt                                // lamports
+  txSignature       String   @unique @map("tx_signature")
+  timestamp         DateTime
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  paper             Paper    @relation(fields: [paperId], references: [onChainId])
+
+  @@map("contributions")
+}
+
+// ── UserProfile ───────────────────────────────────────────────────────────────
+
+model UserProfile {
+  id               Int      @id @default(autoincrement())
+  wallet           String   @unique
+  pda              String   @unique
+  reputation       BigInt   @default(0)
+  papersPublished  Int      @default(0) @map("papers_published")
+  reviewsSubmitted Int      @default(0) @map("reviews_submitted")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  papers           Paper[]
+  reviews          Review[]
+
+  @@map("user_profiles")
+}
+
+// ── IndexerCheckpoint ─────────────────────────────────────────────────────────
+// Stores the last processed transaction signature so the indexer
+// can resume without re-processing everything from scratch.
+
+model IndexerCheckpoint {
+  id            Int      @id @default(1)
+  lastSignature String?  @map("last_signature")
+  lastSlot      BigInt?  @map("last_slot")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("indexer_checkpoints")
+}

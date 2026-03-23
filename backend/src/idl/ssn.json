@@ -1,0 +1,189 @@
+{
+  "version": "0.1.0",
+  "name": "ssn",
+  "instructions": [
+    {
+      "name": "initializePlatform",
+      "accounts": [
+        { "name": "platformState", "isMut": true, "isSigner": false },
+        { "name": "authority", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "publishPaper",
+      "accounts": [
+        { "name": "paper", "isMut": true, "isSigner": false },
+        { "name": "authorProfile", "isMut": true, "isSigner": false },
+        { "name": "platformState", "isMut": true, "isSigner": false },
+        { "name": "author", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "title", "type": "string" },
+        { "name": "authors", "type": { "vec": "string" } },
+        { "name": "abstractCid", "type": "string" },
+        { "name": "pdfCid", "type": "string" },
+        { "name": "field", "type": "string" },
+        { "name": "fundingGoal", "type": "u64" }
+      ]
+    },
+    {
+      "name": "addReview",
+      "accounts": [
+        { "name": "review", "isMut": true, "isSigner": false },
+        { "name": "reviewerProfile", "isMut": true, "isSigner": false },
+        { "name": "paper", "isMut": true, "isSigner": false },
+        { "name": "platformState", "isMut": true, "isSigner": false },
+        { "name": "reviewer", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "rating", "type": "u8" },
+        { "name": "commentCid", "type": "string" }
+      ]
+    },
+    {
+      "name": "contribute",
+      "accounts": [
+        { "name": "paper", "isMut": true, "isSigner": false },
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "contributor", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "amount", "type": "u64" }]
+    },
+    {
+      "name": "releaseFunds",
+      "accounts": [
+        { "name": "paper", "isMut": true, "isSigner": false },
+        { "name": "escrow", "isMut": true, "isSigner": false },
+        { "name": "author", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "initializeProfile",
+      "accounts": [
+        { "name": "profile", "isMut": true, "isSigner": false },
+        { "name": "wallet", "isMut": true, "isSigner": true },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "PlatformState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "publicKey" },
+          { "name": "totalPapers", "type": "u64" },
+          { "name": "totalReviews", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Paper",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "id", "type": "u64" },
+          { "name": "author", "type": "publicKey" },
+          { "name": "title", "type": "string" },
+          { "name": "authors", "type": { "vec": "string" } },
+          { "name": "abstractCid", "type": "string" },
+          { "name": "pdfCid", "type": "string" },
+          { "name": "field", "type": "string" },
+          { "name": "publishedAt", "type": "i64" },
+          { "name": "reviewCount", "type": "u32" },
+          { "name": "avgRating", "type": "u8" },
+          { "name": "fundingGoal", "type": "u64" },
+          { "name": "fundingRaised", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "Review",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "paperId", "type": "u64" },
+          { "name": "reviewer", "type": "publicKey" },
+          { "name": "rating", "type": "u8" },
+          { "name": "commentCid", "type": "string" },
+          { "name": "submittedAt", "type": "i64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    },
+    {
+      "name": "UserProfile",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "wallet", "type": "publicKey" },
+          { "name": "reputation", "type": "u64" },
+          { "name": "papersPublished", "type": "u64" },
+          { "name": "reviewsSubmitted", "type": "u64" },
+          { "name": "bump", "type": "u8" }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "PaperPublished",
+      "fields": [
+        { "name": "paperId", "type": "u64", "index": false },
+        { "name": "author", "type": "publicKey", "index": false },
+        { "name": "title", "type": "string", "index": false },
+        { "name": "pdfCid", "type": "string", "index": false },
+        { "name": "timestamp", "type": "i64", "index": false }
+      ]
+    },
+    {
+      "name": "ReviewAdded",
+      "fields": [
+        { "name": "paperId", "type": "u64", "index": false },
+        { "name": "reviewer", "type": "publicKey", "index": false },
+        { "name": "rating", "type": "u8", "index": false },
+        { "name": "timestamp", "type": "i64", "index": false }
+      ]
+    },
+    {
+      "name": "FundingContributed",
+      "fields": [
+        { "name": "paperId", "type": "u64", "index": false },
+        { "name": "contributor", "type": "publicKey", "index": false },
+        { "name": "amount", "type": "u64", "index": false },
+        { "name": "totalRaised", "type": "u64", "index": false },
+        { "name": "timestamp", "type": "i64", "index": false }
+      ]
+    },
+    {
+      "name": "FundsReleased",
+      "fields": [
+        { "name": "paperId", "type": "u64", "index": false },
+        { "name": "author", "type": "publicKey", "index": false },
+        { "name": "amount", "type": "u64", "index": false }
+      ]
+    }
+  ],
+  "errors": [
+    { "code": 6000, "name": "TitleTooLong", "msg": "Title exceeds 200 characters" },
+    { "code": 6001, "name": "InvalidAuthors", "msg": "Authors list must have 1-20 entries" },
+    { "code": 6002, "name": "CidTooLong", "msg": "IPFS CID exceeds 100 characters" },
+    { "code": 6003, "name": "FieldTooLong", "msg": "Field exceeds 50 characters" },
+    { "code": 6004, "name": "InvalidRating", "msg": "Rating must be between 1 and 5" },
+    { "code": 6005, "name": "CannotReviewOwnPaper", "msg": "You cannot review your own paper" },
+    { "code": 6006, "name": "ZeroContribution", "msg": "Contribution amount must be greater than 0" },
+    { "code": 6007, "name": "NoFundsToRelease", "msg": "No funds available to release" },
+    { "code": 6008, "name": "Unauthorized", "msg": "Only the paper author can release funds" }
+  ]
+}
